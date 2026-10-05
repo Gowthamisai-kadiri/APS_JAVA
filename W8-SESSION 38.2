@@ -1,0 +1,41 @@
+class Solution {
+public:
+    
+    void dfs(int r, int c, vector<vector<int>>& image,
+             int oldColor, int newColor) {
+        
+        int m = image.size();
+        int n = image[0].size();
+        
+        // Out of bounds
+        if (r < 0 || r >= m || c < 0 || c >= n)
+            return;
+        
+        // Different color
+        if (image[r][c] != oldColor)
+            return;
+        
+        // Change color
+        image[r][c] = newColor;
+        
+        // Visit 4 directions
+        dfs(r + 1, c, image, oldColor, newColor);
+        dfs(r - 1, c, image, oldColor, newColor);
+        dfs(r, c + 1, image, oldColor, newColor);
+        dfs(r, c - 1, image, oldColor, newColor);
+    }
+    
+    vector<vector<int>> floodFill(vector<vector<int>>& image,
+                                   int sr, int sc, int color) {
+        
+        int oldColor = image[sr][sc];
+        
+        // If old and new colors are same
+        if (oldColor == color)
+            return image;
+        
+        dfs(sr, sc, image, oldColor, color);
+        
+        return image;
+    }
+};
