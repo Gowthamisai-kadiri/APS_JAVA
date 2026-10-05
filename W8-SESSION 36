@@ -1,0 +1,127 @@
+class Solution {
+public:
+
+    // Topological sort
+    vector<int> topoSort(vector<int> nodes,
+                         vector<vector<int>>& graph,
+                         vector<int>& indegree) {
+
+        queue<int> q;
+
+        for (int node : nodes) {
+            if (indegree[node] == 0) {
+                q.push(node);
+            }
+        }
+
+        vector<int> result;
+
+        while (!q.empty()) {
+
+            int u = q.front();
+            q.pop();
+
+            result.push_back(u);
+
+            for (int v : graph[u]) {
+                indegree[v]--;
+
+                if (indegree[v] == 0) {
+                    q.push(v);
+                }
+            }
+        }
+
+        if (result.size() != nodes.size()) {
+            return {};
+        }
+
+        return result;
+    }
+
+    vector<int> sortItems(int n, int m,
+                          vector<int>& group,
+                          vector<vector<int>>& beforeItems) {
+
+        // Give unique groups to items with group = -1
+        for (int i = 0; i < n; i++) {
+            if (group[i] == -1) {
+                group[i] = m;
+                m++;
+            }
+        }
+
+        // Item graph
+        vector<vector<int>> itemGraph(n);
+        vector<int> itemIndegree(n, 0);
+
+        // Group graph
+        vector<vector<int>> groupGraph(m);
+        vector<int> groupIndegree(m, 0);
+
+        // Build graphs
+        for (int i = 0; i < n; i++) {
+
+            for (int prev : beforeItems[i]) {
+
+                if (group[prev] == group[i]) {
+                    // Same group
+                    itemGraph[prev].push_back(i);
+                    itemIndegree[i]++;
+                }
+                else {
+                    // Different groups
+                    groupGraph[group[prev]].push_back(group[i]);
+                    groupIndegree[group[i]]++;
+                }
+            }
+        }
+
+        // List of all groups
+        vector<int> groups;
+
+        for (int i = 0; i < m; i++) {
+            groups.push_back(i);
+        }
+
+        // Topological sort groups
+        vector<int> groupOrder =
+            topoSort(groups, groupGraph, groupIndegree);
+
+        if (groupOrder.empty()) {
+            return {};
+        }
+
+        // Put items into their groups
+        vector<vector<int>> itemsInGroup(m);
+
+        for (int i = 0; i < n; i++) {
+            itemsInGroup[group[i]].push_back(i);
+        }
+
+        vector<int> answer;
+
+        // Process groups in topological order
+        for (int g : groupOrder) {
+
+            if (itemsInGroup[g].empty())
+                continue;
+
+            vector<int> itemOrder =
+                topoSort(itemsInGroup[g],
+                         itemGraph,
+                         itemIndegree);
+
+            // Cycle inside group
+            if (itemOrder.empty()) {
+                return {};
+            }
+
+            for (int item : itemOrder) {
+                answer.push_back(item);
+            }
+        }
+
+        return answer;
+    }
+};
